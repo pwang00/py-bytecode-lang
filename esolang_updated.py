@@ -152,6 +152,4 @@ compile_and_run()
 """
 func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
 func()
-""
-func=types.FunctionType(types.CodeType(0,0,len(varList),0,0,bytes(codeArr),tuple(consts),tuple(constGlobals),tuple(varList),'','',0,bytes()),globals())
 """
