@@ -12,7 +12,7 @@ dictValues = []
 operators = ["+","-","/","*","^^","%","&","^","|","~",">","-","=","=="]
 reserved_namespace = ['print','input','int','bytes','str','var','bool']
 program ="""
-var a = "Your momma is fat";
+var a = "Hello World!";
 input "Enter a test message: ";
 print a;
 """  
