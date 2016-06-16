@@ -12,7 +12,7 @@ dictValues = []
 operators = ["+","-","/","*","^^","%","&","^","|","~",">","-","=","=="]
 reserved_namespace = ['print','input','int','bytes','str','var','bool']
 program ="""
-var a = "Hello World!";
+var a = 1111;
 input "Enter a test message: ";
 print a;
 """  
@@ -72,7 +72,7 @@ def convertToByteCode(program):
                     bytecode.append(0)
 
 
-                    if program[i][j+1] not in literals and program[i][j+1] in varArray:
+                    if any([i not in literals for i in program[i]]) and program[i][j+1] in varArray:
                         
                         bytecode.append(124) #load fast
                         bytecode.append(varArray.index(program[i][j+1]))
@@ -93,7 +93,7 @@ def convertToByteCode(program):
                         elif '"' in program[i][j+3]:
                             program[i][j+3] = program[i][j+3].replace('"',"")
                         else:
-                            if program[i][j+3] not in varArray and program[i][j+3] not in literals:
+                            if program[i][j+3] not in varArray and any([i not in literals for i in program[i][j+3]]):
                                 print("Variable Error: Variable '"+program[i][j+3]+"' is not defined.")
                                 sys.exit(0)
                         varArray.append(program[i][j+1])
