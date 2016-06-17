@@ -11,11 +11,13 @@ literals = "1234567890!@#$%^&*(){}\|"
 dictValues = []
 operators = ["+","-","/","*","^^","%","&","^","|","~",">","-","=","=="]
 reserved_namespace = ['print','input','int','bytes','str','var','bool']
+
 program ="""
 var a = 1111;
 input "Enter a test message: ";
 print a;
 """  
+
 def scan(code):
     statements = []
     lines = code.count("\n")-1
@@ -134,18 +136,33 @@ def convertToByteCode(program):
                 pass
     bytecode.append(100);bytecode.append(0);
     bytecode.append(0);bytecode.append(83)
-                    
+                
 def compile_and_run():
-    if scan(program) != 1:
-        contains = dict(zip(variables,dictValues))
-        print("\nValues:",contains)
-        print("\nBytecode:",bytecode)
-        print("Defined variables:",list(set(varArray)))
-        print("Constants:",consts)
-        print()
-        func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
-        func()
-    else:
+    try:
+        if sys.argv[1] == "-interpret":
+            global program
+            while True:
+                program = input("+++ ")
+                if scan(program) != 1:
+                    contains = dict(zip(variables,dictValues))
+                    print("\nValues:",contains)
+                    print("\nBytecode:",bytecode)
+                    print("Defined variables:",list(set(varArray)))
+                    print("Constants:",consts)
+                    print()
+                    func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
+                    func()
+                    print(True)
+    except:
+        if scan(program) != 1:
+            contains = dict(zip(variables,dictValues))
+            print("\nValues:",contains)
+            print("\nBytecode:",bytecode)
+            print("Defined variables:",list(set(varArray)))
+            print("Constants:",consts)
+            print()
+            func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
+            func()
         sys.exit(0)
         
 compile_and_run()
