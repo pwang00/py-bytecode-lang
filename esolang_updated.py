@@ -142,7 +142,7 @@ def compile_and_run():
         if sys.argv[1] == "-interpret":
             global program
             while True:
-                program = input("+++ ")
+                program = +input("+++ ")
                 if scan(program) != 1:
                     contains = dict(zip(variables,dictValues))
                     print("\nValues:",contains)
