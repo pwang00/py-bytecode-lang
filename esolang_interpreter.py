@@ -15,7 +15,7 @@ reserved_namespace = ['print','input','int','bytes','str','var','bool']
 def scan(code):
     statements = []
     lines = code.count("\n")-1
-    for i in program.split(";"):        
+    for i in program.split(";"):
         statements.append(i.replace("\n",""))
     return parse_code(statements)
 
@@ -30,19 +30,17 @@ def parse_code(script):
                 print("Syntax Error: Line "+str(i+1)+", missing line termination character ';'")
                 print(code[i])
                 print(" "*(len(code[i]))+"^")
-                return 1
             if code[i].split(" ")[0] in reserved_namespace and code[i].split(" ")[1].replace(";","") in reserved_namespace:
                 print("Syntax Error: Invalid Syntax")
                 print(code[i])
                 print(" "*code[i].index(" ")+"^")
-                return 1
+            if '$' in code.split(" ")[0]:
+                pass
         except:
             print("Syntax Error detected in program.")
-            return 1
-        
+
     code = "".join(code).split(";")
     convertToByteCode(split(code))
-    return 0
 
 
 def split(program):
@@ -68,9 +66,9 @@ def convertToByteCode(program):
                     bytecode.append(0)
                     bytecode.append(0)
 
-                    
+
                     if any([i not in literals for i in program[i]]) and program[i][j+1] in varArray:
-                        
+
                         bytecode.append(124) #load fast
                         bytecode.append(varArray.index(program[i][j+1]))
                         bytecode.append(0)
@@ -84,7 +82,7 @@ def convertToByteCode(program):
                     bytecode.append(1) #pop
 
                 elif program[i][j] == "var":
-                    
+
                     bytecode.append(100)
                     bytecode.append(len(consts))
                     bytecode.append(0)
@@ -115,7 +113,7 @@ def convertToByteCode(program):
                         bytecode.append(100)
                         bytecode.append(consts.index(program[i][j+1].replace("\"","").replace('\'','')))
                         bytecode.append(0)
-                        
+
                         bytecode.append(131)
                         bytecode.append(1)
                         bytecode.append(0)
@@ -129,7 +127,7 @@ def convertToByteCode(program):
                         bytecode.append(0)
                         bytecode.append(131)
                         bytecode.append(0)
-                        bytecode.append(0)                    
+                        bytecode.append(0)
                         bytecode.append(1)
             else:
                 pass
@@ -138,25 +136,24 @@ def convertToByteCode(program):
 
 def compile_and_run():
 
-    while True:
-        global program;
-        program = ""        
-        program = input("+++ ")
-        if scan(program) != 1:
-            contains = dict(zip(variables,dictValues))
-            func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
+    global program;
+    program = ""
+    program = input("+++ ")
+    if scan(program) != 1:
+        contains = dict(zip(variables,dictValues))
+        func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
 
-            func()
-            
-            global bytecode;
-            if 116 in bytecode:
-                bytecode = bytecode[:bytecode.index(116)]
-            else:
-                bytecode = bytecode[:-4]
+        func()
+
+        global bytecode;
+        if 116 in bytecode:
+            bytecode = bytecode[:bytecode.index(116)]
         else:
-            sys.exit(0)
-            
-compile_and_run()
+            bytecode = bytecode[:-4]
+    else:
+        sys.exit(0)
+while True:
+    compile_and_run()
 """
 func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
 func()
