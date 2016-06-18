@@ -11,13 +11,11 @@ literals = "1234567890!@#$%^&*(){}\|"
 dictValues = []
 operators = ["+","-","/","*","^^","%","&","^","|","~",">","-","=","=="]
 reserved_namespace = ['print','input','int','bytes','str','var','bool']
-
 program ="""
-var a = 1111;
+var a = "Hello World!";
 input "Enter a test message: ";
 print a;
 """  
-
 def scan(code):
     statements = []
     lines = code.count("\n")-1
@@ -74,7 +72,7 @@ def convertToByteCode(program):
                     bytecode.append(0)
 
 
-                    if any([i not in literals for i in program[i]]) and program[i][j+1] in varArray:
+                    if program[i][j+1] not in literals and program[i][j+1] in varArray:
                         
                         bytecode.append(124) #load fast
                         bytecode.append(varArray.index(program[i][j+1]))
@@ -95,7 +93,7 @@ def convertToByteCode(program):
                         elif '"' in program[i][j+3]:
                             program[i][j+3] = program[i][j+3].replace('"',"")
                         else:
-                            if program[i][j+3] not in varArray and any([i not in literals for i in program[i][j+3]]):
+                            if program[i][j+3] not in varArray and program[i][j+3] not in literals:
                                 print("Variable Error: Variable '"+program[i][j+3]+"' is not defined.")
                                 sys.exit(0)
                         varArray.append(program[i][j+1])
@@ -136,33 +134,18 @@ def convertToByteCode(program):
                 pass
     bytecode.append(100);bytecode.append(0);
     bytecode.append(0);bytecode.append(83)
-                
+                    
 def compile_and_run():
-    try:
-        if sys.argv[1] == "-interpret":
-            global program
-            while True:
-                program = +input("+++ ")
-                if scan(program) != 1:
-                    contains = dict(zip(variables,dictValues))
-                    print("\nValues:",contains)
-                    print("\nBytecode:",bytecode)
-                    print("Defined variables:",list(set(varArray)))
-                    print("Constants:",consts)
-                    print()
-                    func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
-                    func()
-                    print(True)
-    except:
-        if scan(program) != 1:
-            contains = dict(zip(variables,dictValues))
-            print("\nValues:",contains)
-            print("\nBytecode:",bytecode)
-            print("Defined variables:",list(set(varArray)))
-            print("Constants:",consts)
-            print()
-            func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
-            func()
+    if scan(program) != 1:
+        contains = dict(zip(variables,dictValues))
+        print("\nValues:",contains)
+        print("\nBytecode:",bytecode)
+        print("Defined variables:",list(set(varArray)))
+        print("Constants:",consts)
+        print()
+        func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
+        func()
+    else:
         sys.exit(0)
         
 compile_and_run()
