@@ -26,19 +26,21 @@ def parse_code(script):
     [code.pop(code.index("")) if "" in code else i for i in code]
     for i in range(0,len(code)):#Iterate through the program to check for syntax errors.
         try:
-            if ";" not in code[i][-1:]:
+            if '$' in code[i].split(" ")[0]:
+                pass
+            elif ";" not in code[i][-1:]:
                 print("Syntax Error: Line "+str(i+1)+", missing line termination character ';'")
                 print(code[i])
                 print(" "*(len(code[i]))+"^")
-            if code[i].split(" ")[0] in reserved_namespace and code[i].split(" ")[1].replace(";","") in reserved_namespace:
+                return 1
+            elif code[i].split(" ")[0] in reserved_namespace and code[i].split(" ")[1].replace(";","") in reserved_namespace:
                 print("Syntax Error: Invalid Syntax")
                 print(code[i])
                 print(" "*code[i].index(" ")+"^")
-            if '$' in code.split(" ")[0]:
-                pass
+                return 1
         except:
             print("Syntax Error detected in program.")
-
+            return 1
     code = "".join(code).split(";")
     convertToByteCode(split(code))
 
