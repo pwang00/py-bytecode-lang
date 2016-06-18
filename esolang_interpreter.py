@@ -32,15 +32,12 @@ def parse_code(script):
                 print("Syntax Error: Line "+str(i+1)+", missing line termination character ';'")
                 print(code[i])
                 print(" "*(len(code[i]))+"^")
-                return 1
             elif code[i].split(" ")[0] in reserved_namespace and code[i].split(" ")[1].replace(";","") in reserved_namespace:
                 print("Syntax Error: Invalid Syntax")
                 print(code[i])
                 print(" "*code[i].index(" ")+"^")
-                return 1
         except:
             print("Syntax Error detected in program.")
-            return 1
     code = "".join(code).split(";")
     convertToByteCode(split(code))
 
