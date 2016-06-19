@@ -1,4 +1,4 @@
-import types,re,sys
+import types,re,sys,hashlib
 variables = []
 varArray = []
 valueArray = []
@@ -9,8 +9,9 @@ values = []
 unary_operators = ['print','input','int','bytes','str','bool']
 literals = "1234567890!@#$%^&*(){}\|"
 dictValues = []
+version = "1.0.1"
 operators = ["+","-","/","*","^^","%","&","^","|","~",">","-","=","=="]
-reserved_namespace = ['print','input','int','bytes','str','var','bool']
+reserved_namespace = ['print','input','int','bytes','str','var','bool','details','info'] #TODO: expand functionality of reserved namespace
 
 def scan(code):
     statements = []
@@ -32,15 +33,18 @@ def parse_code(script):
                 print("Syntax Error: Line "+str(i+1)+", missing line termination character ';'")
                 print(code[i])
                 print(" "*(len(code[i]))+"^")
+                return 1
             elif code[i].split(" ")[0] in reserved_namespace and code[i].split(" ")[1].replace(";","") in reserved_namespace:
                 print("Syntax Error: Invalid Syntax")
                 print(code[i])
                 print(" "*code[i].index(" ")+"^")
+                return 1
         except:
             print("Syntax Error detected in program.")
+            return 1
     code = "".join(code).split(";")
     convertToByteCode(split(code))
-
+    return 0
 
 def split(program):
     for i in range(len(program)):
@@ -56,6 +60,7 @@ def convertToByteCode(program):
         for j in range(len(program[i])):
             if program[i][j] in reserved_namespace:
                 if program[i][j] == "print":
+                    
                     if "'" in program[i][j+1] or '"' in program[i][j+1]:
                         program[i][j+1] = program[i][j+1].replace("\"","").replace('\'','')
                         consts.append(program[i][j+1])
@@ -79,9 +84,19 @@ def convertToByteCode(program):
                     bytecode.append(1)
                     bytecode.append(0)
                     bytecode.append(1) #pop
-
+                elif program[i][j] == "details" or program[i][j] == "info":
+                    consts.append("\nEsolang was created by Philip Wang (me), a 10th grader at Poolesville High School's Science, Math, and Computer Science program.\n")
+                    bytecode.append(116)
+                    bytecode.append(0)
+                    bytecode.append(0)
+                    bytecode.append(100)
+                    bytecode.append(len(consts)-1)
+                    bytecode.append(0)
+                    bytecode.append(131) #call function
+                    bytecode.append(1)
+                    bytecode.append(0)
+                    bytecode.append(1) #pop
                 elif program[i][j] == "var":
-
                     bytecode.append(100)
                     bytecode.append(len(consts))
                     bytecode.append(0)
@@ -134,23 +149,26 @@ def convertToByteCode(program):
     bytecode.append(0);bytecode.append(83)
 
 def compile_and_run():
-
+    global bytecode;
     global program;
-    program = ""
-    program = input("+++ ")
+    program = input(">>> ")
     if scan(program) != 1:
         contains = dict(zip(variables,dictValues))
         func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
 
         func()
 
-        global bytecode;
+
         if 116 in bytecode:
             bytecode = bytecode[:bytecode.index(116)]
         else:
             bytecode = bytecode[:-4]
-    else:
-        sys.exit(0)
+
+print("Esolang "+version+" interpreter, build hash: "+hashlib.md5(bytes(version,"utf-8")).hexdigest()[:12]+ ", running on "+"".join(sys.platform))
+print("Type \"info;\" or \"details;\" for more information.")
+if "idlelib" in sys.modules:
+    print(">>> -------------------------------- BEGIN ----------------------------------\n>>>")
+    
 while True:
     compile_and_run()
 """
