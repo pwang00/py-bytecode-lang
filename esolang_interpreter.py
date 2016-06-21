@@ -60,7 +60,7 @@ def convertToByteCode(program):
         for j in range(len(program[i])):
             if program[i][j] in reserved_namespace:
                 if program[i][j] == "print":
-                    
+
                     if "'" in program[i][j+1] or '"' in program[i][j+1]:
                         program[i][j+1] = program[i][j+1].replace("\"","").replace('\'','')
                         consts.append(program[i][j+1])
@@ -75,6 +75,12 @@ def convertToByteCode(program):
 
                         bytecode.append(124) #load fast
                         bytecode.append(varArray.index(program[i][j+1]))
+                        bytecode.append(0)
+                    elif any([i not in literals for i in program[i]]) and program[i][j+1] not in varArray:
+                        print("Name error: name '"+program[i][j+1]+"' is not defined.")
+                        consts.append("")
+                        bytecode.append(100)
+                        bytecode.append(consts.index(""))
                         bytecode.append(0)
                     else:
                         bytecode.append(100)
@@ -168,7 +174,7 @@ print("Esolang "+version+" interpreter, build hash: "+hashlib.md5(bytes(version,
 print("Type \"info;\" or \"details;\" for more information.")
 if "idlelib" in sys.modules:
     print(">>> -------------------------------- BEGIN ----------------------------------\n>>>")
-    
+
 while True:
     compile_and_run()
 """
