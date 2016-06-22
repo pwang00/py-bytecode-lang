@@ -7,7 +7,7 @@ bytecode = []
 consts = [0]
 values = []
 unary_operators = ['print','input','int','bytes','str','bool']
-literals = "1234567890!@#$%^&*(){}\|"
+literals = "1234567890()!@#$%^&*|/<>{}[]|\:;'\"\\"
 dictValues = []
 version = "1.0.1"
 operators = ["+","-","/","*","^^","%","&","^","|","~",">","-","=","=="]
@@ -71,12 +71,12 @@ def convertToByteCode(program):
                     bytecode.append(0)
 
 
-                    if any([i not in literals for i in program[i]]) and program[i][j+1] in varArray:
+                    if any([i not in literals for i in program[i][j+1]]) and program[i][j+1] in varArray:
 
                         bytecode.append(124) #load fast
                         bytecode.append(varArray.index(program[i][j+1]))
                         bytecode.append(0)
-                    elif any([i not in literals for i in program[i]]) and program[i][j+1] not in varArray:
+                    elif any([i not in literals for i in program[i][j+1]]) and program[i][j+1] not in varArray:
                         print("Name error: name '"+program[i][j+1]+"' is not defined.")
                         consts.append("")
                         bytecode.append(100)
@@ -114,7 +114,7 @@ def convertToByteCode(program):
                         else:
                             if program[i][j+3] not in varArray and any([i not in literals for i in program[i][j+3]]):
                                 print("Variable Error: Variable '"+program[i][j+3]+"' is not defined.")
-                                sys.exit(0)
+                                raise KeyboardInterrupt
                         varArray.append(program[i][j+1])
                         consts.append(program[i][j+3])
                         bytecode.append(125)
@@ -122,7 +122,7 @@ def convertToByteCode(program):
                         bytecode.append(0)
                     else:
                         print("\nAssign Error: Can't assign to literals.")
-                        sys.exit(0)
+
                 elif program[i][j] == "input":
 
                     if len(program[i]) != 1:
@@ -176,7 +176,10 @@ if "idlelib" in sys.modules:
     print(">>> -------------------------------- BEGIN ----------------------------------\n>>>")
 
 while True:
-    compile_and_run()
+    try:
+        compile_and_run()
+    except KeyboardInterrupt:
+        continue
 """
 func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
 func()
