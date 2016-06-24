@@ -7,9 +7,12 @@ bytecode = []
 consts = [0]
 values = [] 
 type_array = []
+prev_op = ""
+prev_const = None
+prev_var = None
 unary_operators = ['print','input','int','bytes','str','bool']
-literals = "1234567890()!@#$%^&*|/<>{}[]|\:;'\\"
-dictValues = []
+literals = "1234567890()!@#$%^&*|/<>{}[]|\:;'"
+dict_values = []
 version = "1.0.1"
 operators = ["+","-","/","*","^^","%","&","^","|","~",">","-","=","=="]
 reserved_namespace = ['print','input','int','bytes','str','var','bool','details','info'] #TODO: expand functionality of reserved namespace
@@ -58,23 +61,21 @@ def split(program):
     return program
 
 def convertToByteCode(program):
-    i = 0
-    prev_op = ""
-    prev_const = None
-    prev_var = None
     while len(program) > 0:
-        parse_line(program.pop(i))
+        parse_line(program.pop(0))
         
     bytecode.append(100);bytecode.append(0);
     bytecode.append(0);bytecode.append(83)
-    print(consts)
-    print(bytecode)
-    print(type_array)
+def solve_arithmetic():
+    pass
+
 def parse_line(line):
     i = 0
     names = []
+    global prev_const
+    global prev_op
+    global prev_var
     while len(line) > 0:
-        print(line)
         if line[i] in reserved_namespace:
             prev_op = line[i]
             names.append(line[i])
@@ -83,41 +84,47 @@ def parse_line(line):
                 bytecode.append(116)
                 bytecode.append(0)
                 bytecode.append(0)
+                consts.append(line[i+1])
                 line.pop(i)
             elif prev_op == "details" or prev_op == "info":
                 #TODO
-                print()
                 line.pop(i)
             elif prev_op == "var":
                 #TODO
-                varArray.append(line[i+1])
                 bytecode.append(100)
                 bytecode.append(len(consts))
                 bytecode.append(0)
-                bytecode.append(125)
-                bytecode.append(varArray.index(line[i+1]))
-                bytecode.append(0)
+
                 line.pop(i)
             elif prev_op == "input":
                 #TODO
-                print()
                 bytecode.append(116)
                 bytecode.append(1)
                 bytecode.append(0)
                 line.pop(i)
             
-        elif line[i] in variables:
+        elif line[i] in varArray and line[i] == line[-1]:
             #TODO
-            print("True var")
-            prev_var = line[i]
+            prev_var = line.pop(i)
+            bytecode.append(124) #load fast
+            bytecode.append(varArray.index(prev_var))
+            bytecode.append(0)
+            bytecode.append(131)
+            bytecode.append(1)
+            bytecode.append(0)
+            bytecode.append(1)
+            
+        elif prev_op == "var" and any([i not in literals for i in line[i]]) and line[-1] != line[i] and line[i] not in operators:
+            #TODO
+            prev_var = line.pop(i)
             varArray.append(prev_var)
-            print()
-            line.pop(i)
-        elif not any([i not in literals for i in line[i]]) or line[i] not in varArray and prev_op not in reserved_namespace:
-            print("True lit")
-            prev_const = line[i]
-            if "'" in line[i] or '"' in line[i]:
-                prev_const = line[i].replace("'","").replace('"','')
+            bytecode.append(125)
+            bytecode.append(varArray.index(prev_var))
+            bytecode.append(0)
+        elif prev_op != "var":
+            prev_const = line.pop(i)
+            if "'" in prev_const or '"' in prev_const:
+                prev_const = prev_const.replace("'","").replace('"','')
                 type_array.append(str)
             consts.append(prev_const)
             bytecode.append(100)
@@ -128,19 +135,26 @@ def parse_line(line):
             bytecode.append(0)
             bytecode.append(1)
             type_array.append(int)
-            line.pop(i)
+        elif (not any([i not in literals for i in line[i]]) and prev_op == "var") and all([i not in operators for i in line[i]]):
+            prev_const = line.pop(i)
+            #print("prev_const:",prev_const)
+            consts.append(prev_const)
+        elif any([i in operators for i in line[i]]) and prev_op == "var" and line[i] != "=":
+            prev_const = eval(line.pop(i),{"__builtins__":None},operators)
+            consts.append(prev_const)
+        elif line[-1][-1] in operators:
+            print("Syntax Error: Operator without two operands")
+            print(" "*(len(line[i])-1)+"^")
+            break
         else:
             line.pop(i)
-    print("names",names)
-    print("consts",consts)
 def compile_and_run():
     global bytecode;
     global program;
     program = input(">>> ")
     if scan(program) != 1:
-        contains = dict(zip(variables,dictValues))
+        contains = dict(zip(variables,dict_values))
         func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
-
         func()
 
 
@@ -148,7 +162,7 @@ def compile_and_run():
             bytecode = bytecode[:bytecode.index(116)]
         else:
             bytecode = bytecode[:-4]
-
+    
 print("Esolang "+version+" interpreter, build hash: "+hashlib.md5(bytes(version,"utf-8")).hexdigest()[:12]+ ", running on "+"".join(sys.platform))
 print("Type \"info;\" or \"details;\" for more information.")
 if "idlelib" in sys.modules:
