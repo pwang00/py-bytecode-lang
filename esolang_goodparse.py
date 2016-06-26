@@ -122,6 +122,9 @@ def parse_line(line):
             bytecode.append(125)
             bytecode.append(varArray.index(prev_var))
             bytecode.append(0)
+        elif line[i] not in operators and line[i] not in variables and line[i] not in reserved_namespace and (not all([i in literals for i in line[i]])):
+            print("Name Error: Name '"+line[i]+"' is not defined.")
+            break            
         elif prev_op != "var" and (not all([i not in literals for i in line[i]])):
             prev_const = line.pop(i)
             if "'" in prev_const or '"' in prev_const:
@@ -147,9 +150,6 @@ def parse_line(line):
             print(cache)
             print(" "*(len(cache)-1)+"^")
             print("Syntax Error: Operator without two operands")
-            break
-        elif line[i] not in operators and line[i] not in variables and line[i] not in reserved_namespace:
-            print("Name Error: Name '"+line[i]+"' is not defined.")
             break     
         else:
             line.pop(i)
