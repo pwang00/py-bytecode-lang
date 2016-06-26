@@ -72,6 +72,8 @@ def solve_arithmetic():
 def parse_line(line):
     i = 0
     names = []
+    cache = " ".join(line)
+
     global prev_const
     global prev_op
     global prev_var
@@ -94,7 +96,6 @@ def parse_line(line):
                 bytecode.append(100)
                 bytecode.append(len(consts))
                 bytecode.append(0)
-
                 line.pop(i)
             elif prev_op == "input":
                 #TODO
@@ -114,14 +115,14 @@ def parse_line(line):
             bytecode.append(0)
             bytecode.append(1)
             
-        elif prev_op == "var" and any([i not in literals for i in line[i]]) and line[-1] != line[i] and line[i] not in operators:
+        elif prev_op == "var" and any([i not in literals for i in line[i]]) and line[-1] != line[i] and line[i] not in operators and line[i] not in reserved_namespace:
             #TODO
             prev_var = line.pop(i)
             varArray.append(prev_var)
             bytecode.append(125)
             bytecode.append(varArray.index(prev_var))
             bytecode.append(0)
-        elif prev_op != "var":
+        elif prev_op != "var" and (not all([i not in literals for i in line[i]])):
             prev_const = line.pop(i)
             if "'" in prev_const or '"' in prev_const:
                 prev_const = prev_const.replace("'","").replace('"','')
@@ -143,9 +144,13 @@ def parse_line(line):
             prev_const = eval(line.pop(i),{"__builtins__":None},operators)
             consts.append(prev_const)
         elif line[-1][-1] in operators:
+            print(cache)
+            print(" "*(len(cache)-1)+"^")
             print("Syntax Error: Operator without two operands")
-            print(" "*(len(line[i])-1)+"^")
             break
+        elif line[i] not in operators and line[i] not in variables and line[i] not in reserved_namespace:
+            print("Name Error: Name '"+line[i]+"' is not defined.")
+            break     
         else:
             line.pop(i)
 def compile_and_run():
@@ -156,8 +161,6 @@ def compile_and_run():
         contains = dict(zip(variables,dict_values))
         func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
         func()
-
-
         if 116 in bytecode:
             bytecode = bytecode[:bytecode.index(116)]
         else:
@@ -177,4 +180,3 @@ while True:
 func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
 func()
 """
-
