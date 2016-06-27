@@ -11,7 +11,7 @@ prev_op = ""
 prev_const = None
 prev_var = None
 unary_operators = ['print','input','int','bytes','str','bool']
-literals = "1234567890()!@#$%^&*|/<>{}[]|\:;'"
+literals = "1234567890()!@#$%^&*|/<>{}[]|\:;'\""
 dict_values = []
 version = "1.0.1"
 operators = ["+","-","/","*","^^","%","&","^","|","~",">","-","=","=="]
@@ -79,30 +79,28 @@ def parse_line(line):
     global prev_var
     while len(line) > 0:
         if line[i] in reserved_namespace:
-            prev_op = line[i]
+            prev_op = line.pop(i)
             names.append(line[i])
             if prev_op == "print":
                 #TODO
                 bytecode.append(116)
                 bytecode.append(0)
                 bytecode.append(0)
-                consts.append(line[i+1])
-                line.pop(i)
+                consts.append(line[i])
+                
             elif prev_op == "details" or prev_op == "info":
                 #TODO
-                line.pop(i)
+                pass
             elif prev_op == "var":
                 #TODO
                 bytecode.append(100)
                 bytecode.append(len(consts))
                 bytecode.append(0)
-                line.pop(i)
             elif prev_op == "input":
                 #TODO
                 bytecode.append(116)
                 bytecode.append(1)
                 bytecode.append(0)
-                line.pop(i)
             
         elif line[i] in varArray and line[i] == line[-1]:
             #TODO
@@ -115,16 +113,13 @@ def parse_line(line):
             bytecode.append(0)
             bytecode.append(1)
             
-        elif prev_op == "var" and any([i not in literals for i in line[i]]) and line[-1] != line[i] and line[i] not in operators and line[i] not in reserved_namespace:
+        elif prev_op == "var" and all([i not in literals for i in line[i]]) and line[-1] != line[i] and line[i] not in operators and line[i] not in reserved_namespace:
             #TODO
             prev_var = line.pop(i)
             varArray.append(prev_var)
             bytecode.append(125)
             bytecode.append(varArray.index(prev_var))
-            bytecode.append(0)
-        elif line[i] not in operators and line[i] not in variables and line[i] not in reserved_namespace and (not all([i in literals for i in line[i]])):
-            print("Name Error: Name '"+line[i]+"' is not defined.")
-            break            
+            bytecode.append(0)  
         elif prev_op != "var" and (not all([i not in literals for i in line[i]])):
             prev_const = line.pop(i)
             if "'" in prev_const or '"' in prev_const:
@@ -139,13 +134,20 @@ def parse_line(line):
             bytecode.append(0)
             bytecode.append(1)
             type_array.append(int)
-        elif (not any([i not in literals for i in line[i]]) and prev_op == "var") and all([i not in operators for i in line[i]]):
+        elif (not all([i not in literals for i in line[i]]) and prev_op == "var") and all([i not in operators for i in line[i]]):
             prev_const = line.pop(i)
+            if "'" in prev_const or '"' in prev_const:
+                prev_const = prev_const.replace("'","").replace('"','')
+                type_array.append(str)
             #print("prev_const:",prev_const)
             consts.append(prev_const)
         elif any([i in operators for i in line[i]]) and prev_op == "var" and line[i] != "=":
-            prev_const = eval(line.pop(i),{"__builtins__":None},operators)
+            try:
+                prev_const = eval(line[i],{"__builtins__":None},operators)
+            except SyntaxError:
+                prev_const = exec(line[i])
             consts.append(prev_const)
+            line.pop(i)
         elif line[-1][-1] in operators:
             print(cache)
             print(" "*(len(cache)-1)+"^")
