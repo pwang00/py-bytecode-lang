@@ -5,18 +5,17 @@ valueArray = []
 varCount = 0
 bytecode = []
 consts = [0]
-values = [] 
-type_array = []
-prev_op = ""
-prev_const = None
-prev_var = None
+values = []
 unary_operators = ['print','input','int','bytes','str','bool']
-literals = "1234567890()!@#$%^&*|/<>{}[]|\:;'\""
-dict_values = []
+literals = "1234567890()!@#$%^&*|/<>{}[]|\:;'\"\\"
+dictValues = []
 version = "1.0.1"
 operators = ["+","-","/","*","^^","%","&","^","|","~",">","-","=","=="]
 reserved_namespace = ['print','input','int','bytes','str','var','bool','details','info'] #TODO: expand functionality of reserved namespace
 
+program = """
+print 1;
+input 1;"""
 def scan(code):
     statements = []
     lines = code.count("\n")-1
@@ -47,7 +46,7 @@ def parse_code(script):
             print("Syntax Error detected in program.")
             return 1
     code = "".join(code).split(";")
-    code = [line for line in code if line]
+    #code = [line for line in code if line]
     convertToByteCode(split(code))
     return 0
 
@@ -58,127 +57,89 @@ def split(program):
         else:
             program[i] = program[i].split(" ",3)
     
+    print(program)
     return program
 
 def convertToByteCode(program):
+    i,j = 0,0
+    prev_op = ""
+    prev_const = None
+    prev_var = None
     while len(program) > 0:
-        parse_line(program.pop(0))
-        
-    bytecode.append(100);bytecode.append(0);
-    bytecode.append(0);bytecode.append(83)
-def solve_arithmetic():
-    pass
 
-def parse_line(line):
-    i = 0
-    names = []
-    cache = " ".join(line)
-
-    global prev_const
-    global prev_op
-    global prev_var
-    while len(line) > 0:
-        if line[i] in reserved_namespace:
-            prev_op = line.pop(i)
-            names.append(line[i])
+        if program[i][j] in reserved_namespace:
+            print(True)
+            prev_op = program[i][j]
+            print("Prev op",prev_op)
             if prev_op == "print":
                 #TODO
                 bytecode.append(116)
                 bytecode.append(0)
                 bytecode.append(0)
-                consts.append(line[i])
-                
-            elif prev_op == "details" or prev_op == "info":
+                program.pop(j)
+            elif prev_op == "details" or program[i][j] == "info":
                 #TODO
-                pass
+                print()
+                program.pop(j)
             elif prev_op == "var":
                 #TODO
-                bytecode.append(100)
-                bytecode.append(len(consts))
-                bytecode.append(0)
+                print()
+                program.pop(j)
             elif prev_op == "input":
                 #TODO
-                bytecode.append(116)
-                bytecode.append(1)
-                bytecode.append(0)
-            
-        elif line[i] in varArray and line[i] == line[-1]:
+                print()
+                program.pop(j)
+        elif program[i][j] in variables:
             #TODO
-            prev_var = line.pop(i)
-            bytecode.append(124) #load fast
-            bytecode.append(varArray.index(prev_var))
-            bytecode.append(0)
-            bytecode.append(131)
-            bytecode.append(1)
-            bytecode.append(0)
-            bytecode.append(1)
-            
-        elif prev_op == "var" and all([i not in literals for i in line[i]]) and line[-1] != line[i] and line[i] not in operators and line[i] not in reserved_namespace:
-            #TODO
-            prev_var = line.pop(i)
+            print("True var")
+            prev_var = program[i][j]
             varArray.append(prev_var)
-            bytecode.append(125)
-            bytecode.append(varArray.index(prev_var))
-            bytecode.append(0)  
-        elif prev_op != "var" and (not all([i not in literals for i in line[i]])):
-            prev_const = line.pop(i)
-            if "'" in prev_const or '"' in prev_const:
-                prev_const = prev_const.replace("'","").replace('"','')
-                type_array.append(str)
-            consts.append(prev_const)
+            print()
+            program.pop(j)
+        elif program[i][j] in literals:
+            print("True lit")
+            prev_const = program[i][j]
+            consts.append(prev_var)
             bytecode.append(100)
-            bytecode.append(consts.index(prev_const))
+            bytecode.append(len(consts)-1)
             bytecode.append(0)
-            bytecode.append(131)
-            bytecode.append(1)
-            bytecode.append(0)
-            bytecode.append(1)
-            type_array.append(int)
-        elif (not all([i not in literals for i in line[i]]) and prev_op == "var") and all([i not in operators for i in line[i]]):
-            prev_const = line.pop(i)
-            if "'" in prev_const or '"' in prev_const:
-                prev_const = prev_const.replace("'","").replace('"','')
-                type_array.append(str)
-            #print("prev_const:",prev_const)
-            consts.append(prev_const)
-        elif any([i in operators for i in line[i]]) and prev_op == "var" and line[i] != "=":
-            try:
-                prev_const = eval(line[i],{"__builtins__":None},operators)
-            except SyntaxError:
-                prev_const = exec(line[i])
-            consts.append(prev_const)
-            line.pop(i)
-        elif line[-1][-1] in operators:
-            print(cache)
-            print(" "*(len(cache)-1)+"^")
-            print("Syntax Error: Operator without two operands")
-            break     
-        else:
-            line.pop(i)
+            program.pop(j)
+        print(program,prev_op)
+        program.pop(i)
+    print(program,prev_op)
+    bytecode.append(100);bytecode.append(0);
+    bytecode.append(0);bytecode.append(83)
+
 def compile_and_run():
     global bytecode;
     global program;
     program = input(">>> ")
     if scan(program) != 1:
-        contains = dict(zip(variables,dict_values))
+        contains = dict(zip(variables,dictValues))
         func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
+
         func()
+
+
         if 116 in bytecode:
             bytecode = bytecode[:bytecode.index(116)]
         else:
             bytecode = bytecode[:-4]
-    
+
 print("Esolang "+version+" interpreter, build hash: "+hashlib.md5(bytes(version,"utf-8")).hexdigest()[:12]+ ", running on "+"".join(sys.platform))
 print("Type \"info;\" or \"details;\" for more information.")
 if "idlelib" in sys.modules:
     print(">>> -------------------------------- BEGIN ----------------------------------\n>>>")
-#scan(program)
+scan(program)
+"""
 while True:
     try:
         compile_and_run()
     except KeyboardInterrupt:
         continue
 """
+"""
 func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
 func()
 """
+
