@@ -14,7 +14,7 @@ unary_operators = ['print','input','int','bytes','str','bool']
 literals = "1234567890()!@#$%^&*|/<>{}[]|\:;'\""
 dict_values = []
 version = "1.0.1"
-operators = ["+","-","/","*","^^","%","&","^","|","~",">","-","=","=="]
+operators = ["+","-","/","*","^^","%","&","^","|","~",">","-","=","==",]
 reserved_namespace = ['print','input','int','bytes','str','var','bool','details','info'] #TODO: expand functionality of reserved namespace
 
 def scan(code):
@@ -47,7 +47,7 @@ def parse_code(script):
             print("Syntax Error detected in program.")
             return 1
     code = "".join(code).split(";")
-    code = [line for line in code if line]
+    code = [line for line in code if line and "$" not in line]
     convertToByteCode(split(code))
     return 0
 
@@ -61,8 +61,10 @@ def split(program):
     return program
 
 def convertToByteCode(program):
+    program = [line for line in program if "$" not in line]
     while len(program) > 0:
-        parse_line(program.pop(0))
+        line = program.pop(0)
+        parse_line(line)
     bytecode.append(100);bytecode.append(0);
     bytecode.append(0);bytecode.append(83)
 def solve_arithmetic():
