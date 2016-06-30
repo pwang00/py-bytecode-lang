@@ -126,6 +126,17 @@ def parse_line(line):
             if "'" in prev_const or '"' in prev_const:
                 prev_const = prev_const.replace("'","").replace('"','')
                 type_array.append(str)
+            else:
+                try:
+                    prev_const = eval(prev_const,{"__builtins__":None},operators)
+                except SyntaxError:
+                    exec("global temp;temp = "+line[i])
+                    prev_const = temp;
+                    prev_var = line[i][0]
+                    varArray.append(prev_var)
+                    bytecode.append(125)
+                    bytecode.append(varArray.index(prev_var))
+                    bytecode.append(0)                  
             consts.append(prev_const)
             bytecode.append(100)
             bytecode.append(consts.index(prev_const))
