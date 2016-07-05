@@ -102,8 +102,20 @@ def parse_line(line):
                 bytecode.append(116)
                 bytecode.append(1)
                 bytecode.append(0)
-            
-        elif line[i] in varArray and line[i] == line[-1]:
+        elif line[i] in varArray and line[i] == line[-1] and len(cache) == 1:
+            #TODO
+            prev_var = line.pop(i)
+            bytecode.append(116)
+            bytecode.append(0)
+            bytecode.append(0)
+            bytecode.append(124) #load fast
+            bytecode.append(varArray.index(prev_var))
+            bytecode.append(0)
+            bytecode.append(131)
+            bytecode.append(1)
+            bytecode.append(0)
+            bytecode.append(1)            
+        elif line[i] in varArray and line[i] == line[-1] and prev_op in reserved_namespace:
             #TODO
             prev_var = line.pop(i)
             bytecode.append(124) #load fast
@@ -113,7 +125,8 @@ def parse_line(line):
             bytecode.append(1)
             bytecode.append(0)
             bytecode.append(1)
-            
+
+                        
         elif prev_op == "var" and all([i not in literals for i in line[i]]) and line[-1] != line[i] and line[i] not in operators and line[i] not in reserved_namespace:
             #TODO
             prev_var = line.pop(i)
@@ -176,7 +189,7 @@ def parse_line(line):
 def compile_and_run():
     global bytecode;
     global program;
-    program = input(">>> ")
+    program = " ".join(input(">>> ").split())
     if scan(program) != 1:
         contains = dict(zip(variables,dict_values))
         func=types.FunctionType(types.CodeType(0,0,len(varArray),0,0,bytes(bytecode),tuple(consts),tuple(reserved_namespace),tuple(variables),'','',0,bytes()),globals())
